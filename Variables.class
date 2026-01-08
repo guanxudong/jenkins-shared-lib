@@ -1,0 +1,54 @@
+package com.globalclass
+
+class Variables implements Serializable {
+    // 1. Fixed Fields (Validation)
+    String agent = 'any'
+    String credentialsId = 'default-ssh-key'
+    List<Map> deployment_flow = []
+
+    // 2. Generic Storage for everything else
+    Map<String, Object> ansibleVars = [:]
+
+    // ---------------------------------------------------------
+    // SETTER 1: Method Style -> region "asia"
+    // ---------------------------------------------------------
+    def methodMissing(String name, args) {
+        if (args.length > 0) {
+            saveVariable(name, args[0])
+        }
+    }
+
+    // ---------------------------------------------------------
+    // SETTER 2: Property Style -> region = "asia"
+    // ---------------------------------------------------------
+    def propertyMissing(String name, value) {
+        saveVariable(name, value)
+    }
+
+    // ---------------------------------------------------------
+    // GETTER: The Magic -> agent region
+    // ---------------------------------------------------------
+    def propertyMissing(String name) {
+        // 1. Check if we have this variable stored in our generic map
+        if (ansibleVars.containsKey(name)) {
+            return ansibleVars[name]
+        }
+        
+        // 2. Fallback: If it's not found, maybe return null or error?
+        // Returning name as string is sometimes useful for "echo myVar"
+        // but typically null is safer.
+        return null 
+    }
+
+    // Internal Helper to save data to the right place
+    private void saveVariable(String name, Object value) {
+        // If the class has a real field (like 'agent'), update that field
+        if (this.hasProperty(name)) {
+            this."$name" = value
+        } 
+        // Otherwise, store it in the map so we can retrieve it later
+        else {
+            this.ansibleVars[name] = value
+        }
+    }
+}
