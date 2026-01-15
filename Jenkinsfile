@@ -1,30 +1,19 @@
-@Library('ops-library') _
+library 'devops-pipeline-library'
 
 variables {
-    // 1. SETTER: Defines a custom variable (stored in ansibleVars map)
-    my_region "us-west-2" 
-    
-    // 2. GETTER: References 'my_region' immediately
-    // The class 'propertyMissing' getter finds "us-west-2" and returns it
-    agent my_region 
+    agent 'region-as'
 
-    // 3. INTERPOLATION: Works inside strings too
-    credentialsId "deploy-key-${my_region}"
+    deployPlan {
+        step name: 'Deploy Application', playbook: 'deploy.yml'
+        parallel {
+            step name: 'App-1', playbook: 'app1.yml', agent: 'dc-a'
+            step name: 'App-2', playbook: 'app2.yml', agent: 'dc-b'
+        }
+    }
 
-    // 4. USAGE: Passing these variables into the flow
-    deployment_flow = [
-        [
-            name: "Stop Service",
-            tags: "stop_app",
-            // Reference the variable again
-            extra_vars: [ region: my_region ] 
-        ],
-        [
-            name: "Deploy",
-            tags: "deploy_app",
-            extra_vars: [ version: "2.0.0" ]
-        ]
-    ]
+    rollbackPlan {
+        step name: 'Rollback Application', playbook: 'rollback.yml'
+    }
 }
 
-appDeploy()
+myDeploy()

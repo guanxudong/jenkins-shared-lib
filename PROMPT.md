@@ -39,25 +39,25 @@ Design a standardized "Pipeline as Code" workflow for company developers using *
 **1. The Target `Jenkinsfile` (Developer View):**
 
 ```groovy
-library 'deploy'
-variables {
-    agent 'infra-bastion'
-    // Custom vars injected to Ansible
-    app_version '2.0'
-    
-    // Complex Plan
-    executionPlan = [
-        ['name': 'Common', 'file': 'ansible/common.yml'],
-        ['parallel': [
-            ['name': 'DC1', 'file': 'ansible/app.yml', 'agent': 'dc1-node', 'inventory': 'inv_dc1'],
-            ['name': 'DC2', 'file': 'ansible/app.yml', 'agent': 'dc2-node', 'inventory': 'inv_dc2']
-        ]],
-        // Rollback definition
-        ['name': 'Finalize', 'file': 'ansible/fin.yml', 'rollback': 'ansible/undo_fin.yml']
-    ]
-}
-myDeploy()
+library 'devops-pipeline-library'
 
+variables {
+    agent 'region-as'
+
+    deployPlan {
+        step name: 'Deploy Application', playbook: 'deploy.yml'
+        parallel {
+            step name: 'App-1', playbook: 'app1.yml', agent: 'dc-a'
+            step name: 'App-2', playbook: 'app2.yml', agent: 'dc-b'
+        }
+    }
+
+    rollbackPlan {
+        step name: 'Rollback Application', playbook: 'rollback.yml'
+    }
+}
+
+myDeploy()
 ```
 
 **2. The Shared Library Logic (`vars/myDeploy.groovy` - Conceptual):**
