@@ -57,7 +57,7 @@ class PlanDSL implements Serializable {
         body.delegate = parallelDSL
         body.resolveStrategy = Closure.DELEGATE_FIRST
         body()
-        steps << [parallel: parallelDSL.steps]
+        steps << [parallel: parallelDSL.parallelSteps]
     }
 }
 
