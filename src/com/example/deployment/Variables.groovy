@@ -4,6 +4,9 @@ class VariablesDSL implements Serializable {
     def variablesMap = [:]
     def deployStepsList = []
     def rollbackStepsList = []
+    
+    boolean enableAutoRollback = false
+    String successFileName = 'build_success.txt'
 
     private static Map<String, VariablesDSL> buildRepository = [:]
 
